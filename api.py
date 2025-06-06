@@ -34,4 +34,4 @@ def download_file(filename):
 # Inicializar
 if __name__ == '__main__':
     load_endpoints()
-    app.run(debug=True)
+    app.run(debug=True, port=3269, host='0.0.0.0')
