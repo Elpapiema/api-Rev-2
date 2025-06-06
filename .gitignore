@@ -1,2 +1,5 @@
 /.venv
 /promt.txt
+/lib/__pycache__
+/lib/ig-dl.py
+/api.zip
