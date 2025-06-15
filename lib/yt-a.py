@@ -4,7 +4,7 @@ from flask import request, jsonify, send_file, after_this_request, url_for
 import yt_dlp
 
 DOWNLOAD_FOLDER = '/tmp'
-COOKIES_FILE =  None #'/auth/cookies.txt'  # Pon la ruta si tienes un archivo cookies.txt
+COOKIES_FILE = './auth/cookies.txt'  # Pon la ruta si tienes un archivo cookies.txt
 
 def register(app):
     @app.route('/download_audio', methods=['GET'])
