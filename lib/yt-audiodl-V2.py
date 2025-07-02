@@ -7,7 +7,7 @@ DOWNLOAD_FOLDER = '/tmp'
 COOKIES_FILE = './auth/cookies.txt'  # Pon la ruta si tienes un archivo cookies.txt
 
 def register(app):
-    @app.route('/download_audio', methods=['GET'])
+    @app.route('/download_audioV2', methods=['GET'])
     def download_audio():
         url = request.args.get('url')
 

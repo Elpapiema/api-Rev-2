@@ -7,7 +7,7 @@ DOWNLOAD_FOLDER = '/tmp'
 COOKIES_FILE = './auth/cookies.txt'  # Pon la ruta si tienes un archivo cookies.txt
 
 def register(app):
-    @app.route('/download_video', methods=['GET'])
+    @app.route('/download_videoV2', methods=['GET'])
     def download_video():
         url = request.args.get('url')
 
