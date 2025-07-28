@@ -14,12 +14,12 @@ def register(app):
         if not url:
             return jsonify({'error': 'Falta el parámetro URL'}), 400
 
-        panda = "hy5EGGKC"
+        panda = "y1g4rhhYToTA"
         panda2 = "G32254GLM09MN89Maa"
 
         sources = [
-            f"https://dlpanda.com/id?url={url}&token={panda}",
-            f"https://dlpanda.com/id?url={url}&token51={panda2}"
+            f"https://dlpanda.com/?url={url}&t0ken={panda}",
+            f"https://dlpanda.com/?url={url}&t0ken51={panda2}"
         ]
 
         headers = {
