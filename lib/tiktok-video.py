@@ -1,10 +1,6 @@
-import os
-import random
 import requests
 from bs4 import BeautifulSoup
-from flask import request, jsonify, send_file, after_this_request, url_for
-
-DOWNLOAD_FOLDER = '/tmp'
+from flask import request, jsonify
 
 def register(app):
     @app.route('/Tiktok_videodl', methods=['GET'])
@@ -54,36 +50,7 @@ def register(app):
         if not download_url:
             return jsonify({'error': 'No se pudo obtener el enlace de descarga. Verifica el link.'}), 400
 
-        try:
-            video_response = requests.get(download_url, headers=headers)
-            filename = f"{random.randint(1, 10**10)}.mp4"
-            filepath = os.path.join(DOWNLOAD_FOLDER, filename)
-
-            with open(filepath, 'wb') as f:
-                f.write(video_response.content)
-
-            file_url = url_for('serve_video_file', filename=filename, _external=True)
-
-            return jsonify({
-                'message': 'Video descargado correctamente.',
-                'video_url': file_url
-            })
-
-        except Exception as e:
-            return jsonify({'error': f'Error al descargar el video: {str(e)}'}), 500
-
-    @app.route('/tiktok_video/<filename>')
-    def serve_video_file(filename):
-        file_path = os.path.join(DOWNLOAD_FOLDER, filename)
-        if not os.path.exists(file_path):
-            return jsonify({'error': 'Archivo no encontrado'}), 404
-
-        @after_this_request
-        def remove_file(response):
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                print(f'Error al eliminar el archivo: {e}')
-            return response
-
-        return send_file(file_path, mimetype='video/mp4', as_attachment=True, download_name=filename)
+        return jsonify({
+            'message': 'Enlace de descarga obtenido correctamente.',
+            'video_url': download_url
+        })

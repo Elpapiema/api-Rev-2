@@ -1,10 +1,6 @@
-import os
-import random
 import requests
 from bs4 import BeautifulSoup
-from flask import request, jsonify, send_file, after_this_request, url_for
-
-DOWNLOAD_FOLDER = '/tmp'
+from flask import request, jsonify
 
 def register(app):
     @app.route('/Tiktok_slidesdl', methods=['GET'])
@@ -49,40 +45,7 @@ def register(app):
         if not img_urls:
             return jsonify({'error': 'No se pudieron obtener imágenes. Verifica que el enlace sea válido y en modo presentación.'}), 400
 
-        file_links = []
-
-        for img_url in img_urls:
-            try:
-                response = requests.get(img_url)
-                filename = f"{random.randint(1, 10**10)}.jpg"
-                filepath = os.path.join(DOWNLOAD_FOLDER, filename)
-
-                with open(filepath, 'wb') as f:
-                    f.write(response.content)
-
-                file_url = url_for('serve_temp_file', filename=filename, _external=True)
-                file_links.append(file_url)
-
-            except Exception as e:
-                print(f"Error al descargar imagen {img_url}: {e}")
-
         return jsonify({
             'message': 'Imágenes extraídas exitosamente.',
-            'slides': file_links
+            'slides': img_urls
         })
-
-    @app.route('/tiktok_file/<filename>')
-    def serve_temp_file(filename):
-        file_path = os.path.join(DOWNLOAD_FOLDER, filename)
-        if not os.path.exists(file_path):
-            return jsonify({'error': 'Archivo no encontrado'}), 404
-
-        @after_this_request
-        def remove_file(response):
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                print(f'Error al eliminar archivo: {e}')
-            return response
-
-        return send_file(file_path, mimetype='image/jpeg', as_attachment=True, download_name=filename)
