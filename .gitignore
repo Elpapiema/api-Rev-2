@@ -1,4 +1,5 @@
 /.venv
+/.env
 /promt.txt
 /lib/__pycache__
 /lib/ig-dl.py

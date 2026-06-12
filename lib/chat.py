@@ -8,6 +8,30 @@ from flask import jsonify, request
 from werkzeug.utils import secure_filename
 
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def load_env_file(env_path=None, override=False):
+    env_path = env_path or os.path.join(BASE_DIR, ".env")
+    if not os.path.isfile(env_path):
+        return
+
+    with open(env_path, "r", encoding="utf-8") as env_file:
+        for line in env_file:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+
+            if key and (override or key not in os.environ):
+                os.environ[key] = value
+
+
+load_env_file()
+
 AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:5832")
 AI_SERVER_TOKEN = os.getenv("AI_SERVER_TOKEN", "secret-token")
 CHATS_DIR = os.getenv("CHATS_DIR", "./chats")
