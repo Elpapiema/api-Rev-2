@@ -37,6 +37,7 @@ AI_SERVER_TOKEN = os.getenv("AI_SERVER_TOKEN", "secret-token")
 CHATS_DIR = os.getenv("CHATS_DIR", "./chats")
 CHAT_EXPIRATION_DAYS = int(os.getenv("CHAT_EXPIRATION_DAYS", "10"))
 CHAT_EXPIRATION_SECONDS = CHAT_EXPIRATION_DAYS * 24 * 60 * 60
+AI_PROXY_DEBUG = os.getenv("AI_PROXY_DEBUG", "false").lower() in ("1", "true", "yes", "on")
 
 
 def get_chat_path(chat_id):
@@ -132,6 +133,36 @@ def extract_ai_response(response_data):
     return json.dumps(response_data, ensure_ascii=False)
 
 
+def log_ai_debug(message, **values):
+    if not AI_PROXY_DEBUG:
+        return
+
+    safe_values = {
+        key: value
+        for key, value in values.items()
+        if key not in ("token", "authorization", "headers")
+    }
+    print(f"[chat-proxy] {message}: {safe_values}", flush=True)
+
+
+def log_ai_error(error):
+    if not AI_PROXY_DEBUG:
+        return
+
+    error_data = {
+        "type": type(error).__name__,
+        "error": str(error),
+        "ai_server_url": AI_SERVER_URL,
+    }
+
+    response = getattr(error, "response", None)
+    if response is not None:
+        error_data["status_code"] = response.status_code
+        error_data["response_text"] = response.text[:1000]
+
+    print(f"[chat-proxy] AI request failed: {error_data}", flush=True)
+
+
 def call_ai_server(messages):
     latest_message = messages[-1]["content"] if messages else ""
     payload = {
@@ -143,12 +174,26 @@ def call_ai_server(messages):
         "Content-Type": "application/json"
     }
 
+    log_ai_debug(
+        "sending request",
+        ai_server_url=AI_SERVER_URL,
+        message_count=len(messages),
+        latest_message_preview=latest_message[:120]
+    )
+
     response = requests.post(
         AI_SERVER_URL,
         json=payload,
         headers=headers,
         timeout=60
     )
+
+    log_ai_debug(
+        "received response",
+        status_code=response.status_code,
+        response_preview=response.text[:1000]
+    )
+
     response.raise_for_status()
 
     try:
@@ -191,7 +236,8 @@ def register(app):
 
         try:
             ai_response = call_ai_server(messages)
-        except requests.RequestException:
+        except requests.RequestException as error:
+            log_ai_error(error)
             return jsonify({"error": "Error al comunicarse con el servidor de IA"}), 502
 
         chat["messages"].append(user_message)
@@ -219,7 +265,8 @@ def register(app):
 
         try:
             ai_response = call_ai_server(messages)
-        except requests.RequestException:
+        except requests.RequestException as error:
+            log_ai_error(error)
             return jsonify({"error": "Error al comunicarse con el servidor de IA"}), 502
 
         chat["messages"] = messages + [{"role": "assistant", "content": ai_response}]
