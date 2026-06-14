@@ -185,7 +185,7 @@ def call_ai_server(messages):
         AI_SERVER_URL,
         json=payload,
         headers=headers,
-        timeout=60
+        timeout=400
     )
 
     log_ai_debug(
